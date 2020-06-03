@@ -1,0 +1,17 @@
+gate:
+  endpoint: $SPINNAKER_ENDPOINT
+auth:
+  enabled: true
+  oauth2:
+    tokenUrl: https://github.com/login/oauth/access_token
+    authUrl: https://github.com/login/oauth/authorize
+    clientId: $SPINNAKER_OAUTH_CLIENT_ID
+    clientSecret: $SPINNAKER_OAUTH_CLIENT_SECRET
+    scopes:
+    - user:email
+    cachedToken:
+      accesstoken: $SPINNAKER_ACCESS_TOKEN
+      tokentype: bearer
+      refreshtoken: ""
+      expiry: 0001-01-01T00:00:00Z
+  ldap: null
