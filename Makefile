@@ -5,24 +5,30 @@ REPO_NAMESPACE          ?= synapsestudios
 REPO_USERNAME           ?= synapsestudios
 REPO_API_URL            ?= https://hub.docker.com/v2
 IMAGE_NAME              ?= devops-toolbox
-TAG_PREFIX              ?=
-TAG_SUFFIX              ?=
+TAG_SUFFIX              ?= $(shell echo "-$(BASE_IMAGE)" | $(SED) 's|:|-|g' | $(SED) 's|/|_|g' 2>/dev/null )
 SED                     := $(shell [[ `command -v gsed` ]] && echo gsed || echo sed)
 VERSION                 := $(shell git rev-parse --abbrev-ref HEAD | $(SED) 's|release/||g' | $(SED) 's|/|_|g' 2>/dev/null)
 VCS_REF                 := $(shell git rev-parse --short HEAD 2>/dev/null || echo "0000000")
 BUILD_DATE              := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+BUILD_OUTPUT            ?= type=registry
+BUILD_PROGRESS          ?= auto
+MICRO_BADGER_URL        ?=
 
 # Build Args
-BASE_IMAGE              ?= alpine:3.11
+AZURE_CLI_VERSION       ?= 2.8.0
+BASE_IMAGE              ?= alpine:3.12
+CIRCLE_CI_CLI_VERSION   ?= 0.1.8599
 DOCKER_GID              ?= 1001
 DOCKER_GROUP            ?= synapse
 DOCKER_UID              ?= 1001
 DOCKER_USER             ?= synapse
 FLY_VERSION             ?= 6.0.0
 GIT_CRYPT_VERSION       ?= master
+K6_VERSION              ?= v0.26.2
 KIND_VERSION            ?= v0.7.0
 KOPS_VERSION            ?= v1.17.0-beta.1
 KUBECTL_VERSION         ?= v1.18.0
+LEGO_VERSION            ?= 3.8.0
 PACKER_VERSION          ?= 1.5.5
 SPIN_VERSION            ?= 1.14.0
 STARSHIP_VERSION        ?= v0.38.0
@@ -39,16 +45,20 @@ default: build
 .PHONY: build
 build:
 	docker build \
+		--build-arg AZURE_CLI_VERSION=$(AZURE_CLI_VERSION) \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg CIRCLE_CI_CLI_VERSION=$(CIRCLE_CI_CLI_VERSION) \
 		--build-arg DOCKER_GID=$(DOCKER_GID) \
 		--build-arg DOCKER_GROUP=$(DOCKER_GROUP) \
 		--build-arg DOCKER_UID=$(DOCKER_UID) \
 		--build-arg DOCKER_USER=$(DOCKER_USER) \
 		--build-arg FLY_VERSION=$(FLY_VERSION) \
 		--build-arg GIT_CRYPT_VERSION=$(GIT_CRYPT_VERSION) \
+		--build-arg K6_VERSION=$(K6_VERSION) \
 		--build-arg KOPS_VERSION=$(KOPS_VERSION) \
 		--build-arg KUBECTL_VERSION=$(KUBECTL_VERSION) \
+		--build-arg LEGO_VERSION=$(LEGO_VERSION) \
 		--build-arg PACKER_VERSION=$(PACKER_VERSION) \
 		--build-arg SPIN_VERSION=$(SPIN_VERSION) \
 		--build-arg STARSHIP_VERSION=$(STARSHIP_VERSION) \
@@ -58,9 +68,9 @@ build:
 		--build-arg TFLINT_VERSION=$(TFLINT_VERSION) \
 		--build-arg VCS_REF=$(VCS_REF) \
 		--build-arg VERSION=$(VERSION) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)latest$(TAG_SUFFIX) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)$(VCS_REF)$(TAG_SUFFIX) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)$(VERSION)$(TAG_SUFFIX) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF)$(TAG_SUFFIX) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION)$(TAG_SUFFIX) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):latest$(TAG_SUFFIX) \
 		--file Dockerfile .
 
 # List built images
@@ -79,9 +89,9 @@ test:
 .SILENT: push
 push: build
 	echo "$$REPO_PASSWORD" | docker login -u "$(REPO_USERNAME)" --password-stdin; \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)latest; \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)$(VCS_REF)$(TAG_SUFFIX); \
-		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(TAG_PREFIX)$(VERSION)$(TAG_SUFFIX);
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):latest; \
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF)$(TAG_SUFFIX); \
+		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION)$(TAG_SUFFIX);
 
 # Update README on registry
 .PHONY: push-readme
