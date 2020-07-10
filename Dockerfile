@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=alpine:3.11
+ARG BASE_IMAGE=alpine:3.12
 FROM ${BASE_IMAGE}
 
 # Install runtime deps.
@@ -44,9 +44,12 @@ RUN set -xe; \
         zsh;
 
 # Install additional pre-built packages
+ARG CIRCLE_CI_CLI_VERSION=0.1.8599
 ARG FLY_VERSION=6.0.0
+ARG K6_VERSION=v0.26.2
 ARG KOPS_VERSION=v1.17.0-beta.1
 ARG KUBECTL_VERSION=v1.18.0
+ARG LEGO_VERSION=3.8.0
 ARG PACKER_VERSION=1.5.5
 ARG SPIN_VERSION=1.14.0
 ARG STARSHIP_VERSION=v0.38.0
@@ -91,28 +94,50 @@ RUN set -xe; \
     mv fly /usr/local/bin/; \
     chmod 0755 /usr/local/bin/fly; \
     curl -fSL https://storage.googleapis.com/spinnaker-artifacts/spin/${SPIN_VERSION}/linux/amd64/spin -o /usr/local/bin/spin; \
-    chmod 0755 /usr/local/bin/spin;
+    chmod 0755 /usr/local/bin/spin; \
+    curl -fSL https://github.com/loadimpact/k6/releases/download/${K6_VERSION}/k6-${K6_VERSION}-linux64.tar.gz -o /tmp/k6-${K6_VERSION}-linux64.tar.gz; \
+    tar xfv /tmp/k6-${K6_VERSION}-linux64.tar.gz; \
+    rm /tmp/k6-${K6_VERSION}-linux64.tar.gz; \
+    mv k6-${K6_VERSION}-linux64/k6 /usr/local/bin/; \
+    rm -rf k6-${K6_VERSION}-linux64; \
+    chmod 0755 /usr/local/bin/k6; \
+    curl -fSL https://github.com/CircleCI-Public/circleci-cli/releases/download/v${CIRCLE_CI_CLI_VERSION}/circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64.tar.gz -o /tmp/circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64.tar.gz; \
+    tar xfv /tmp/circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64.tar.gz; \
+    rm /tmp/circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64.tar.gz; \
+    mv circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64/circleci /usr/local/bin; \
+    chmod 0755 /usr/local/bin/circleci; \
+    rm -rf circleci-cli_${CIRCLE_CI_CLI_VERSION}_linux_amd64; \
+    curl -fSL https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz -o /tmp/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
+    tar xfv /tmp/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
+    rm /tmp/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
+    rm LICENSE CHANGELOG.md; \
+    mv lego /usr/local/bin; \
+    chmod 0755 /usr/local/bin/lego;
+
 
 # Build additional packages
+ARG AZURE_CLI_VERSION=2.8.0
 ARG GIT_CRYPT_VERSION=master
-ARG TERRAFORM_LSP_VERSION=0.0.10
 ARG KIND_VERSION=v0.7.0
+ARG TERRAFORM_LSP_VERSION=0.0.10
 RUN set -xe; \
     cd /tmp; \
     apk add --update  --no-cache --virtual .build-deps \
         alpine-sdk \
         go \
         libffi-dev \
+        musl-dev \
         openssl-dev \
         postgresql-dev \
         python3-dev; \
     pip3 install --upgrade pip --no-cache-dir; \
-    pip3 install awscli --no-cache-dir; \
+    pip3 install awscli --no-cache-dir --ignore-installed distlib; \
     pip3 install ansible --no-cache-dir; \
     pip3 install psycopg2 --no-cache-dir; \
     pip3 install pre-commit --no-cache-dir; \
     pip3 install mkdocs --no-cache-dir; \
     pip3 install mkdocs-material --no-cache-dir; \
+    pip3 install azure-cli=="${AZURE_CLI_VERSION}" --no-cache-dir; \
     cd /tmp; \
     git clone https://github.com/awslabs/git-secrets.git; \
     cd git-secrets; \
@@ -122,12 +147,10 @@ RUN set -xe; \
     go get github.com/pcarrier/gauth; \
     go get github.com/lucagrulla/cw; \
     go get github.com/aykamko/tag; \
-    go get github.com/loadimpact/k6; \
     GO111MODULE="on" go get sigs.k8s.io/kind@${KIND_VERSION}; \
     mv /root/go/bin/gauth /usr/local/bin/; \
     mv /root/go/bin/cw /usr/local/bin/; \
     mv /root/go/bin/tag /usr/local/bin/; \
-    mv /root/go/bin/k6 /usr/local/bin/; \
     mv /root/go/bin/kind /usr/local/bin/; \
     git clone https://github.com/AGWA/git-crypt.git; \
     cd git-crypt; \

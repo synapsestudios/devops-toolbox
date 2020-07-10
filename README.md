@@ -11,7 +11,9 @@ This an [Alpine] based docker image used as a general toolkit for DevOps related
 
  * [ansible]
  * [awscli]
+ * [azure-cli]
  * [certbot]
+ * [CircleCI CLI]
  * [cw] (CloudWatch CLI)
  * [fly] (Concourse CLI)
  * [gauth]
@@ -22,6 +24,7 @@ This an [Alpine] based docker image used as a general toolkit for DevOps related
  * [kind] (Kubernetes in Docker)
  * [kops]
  * [kubectl]
+ * [lego]
  * [packer]
  * [pre-commit]
  * [spin] (Spinnaker CLI)
@@ -89,34 +92,39 @@ BASE_IMAGE='alpine:3.10' make
 BASE_IMAGE='node:12.16.1-alpine3.11' make
 ```
 
-Builds can also be tagged with a `TAG_SUFFIX` like so:
+Builds can also be extend existing base images like so:
 ```shell
-TAG_SUFFIX=-nodejs BASE_IMAGE='node:12.16.1-alpine3.11' make
+BASE_IMAGE='node:12.16.1-alpine3.11' make
 # Given you have already built the default image, your results may look like the following
 make list
 REPOSITORY                   TAG                 IMAGE ID            CREATED              SIZE
-synapsestudios/devops-toolbox   a68f89b-nodejs      82699f575aa4        38 seconds ago       1.28GB
-synapsestudios/devops-toolbox   latest-nodejs       82699f575aa4        38 seconds ago       1.28GB
-synapsestudios/devops-toolbox   master-nodejs       82699f575aa4        38 seconds ago       1.28GB
-synapsestudios/devops-toolbox   a68f89b             45337831581a        About a minute ago   1.2GB
-synapsestudios/devops-toolbox   latest              45337831581a        About a minute ago   1.2GB
-synapsestudios/devops-toolbox   master              45337831581a        About a minute ago   1.2GB
+synapsestudios/devops-toolbox   fdb4f15-node-12.16.1-alpine3.11         d9d978108f60        18 seconds ago      1.96GB
+synapsestudios/devops-toolbox   latest-node-12.16.1-alpine3.11          d9d978108f60        18 seconds ago      1.96GB
+synapsestudios/devops-toolbox   fdb4f15-alpine-3.12                     f4e84d9c651b        11 minutes ago      1.83GB
+synapsestudios/devops-toolbox   latest-alpine-3.12                      f4e84d9c651b        11 minutes ago      1.83GB
+synapsestudios/devops-toolbox   fdb4f15                                 0c49b70fd2fc        11 minutes ago      1.83GB
+synapsestudios/devops-toolbox   latest                                  0c49b70fd2fc        11 minutes ago      1.83GB
+
 ```
 
 | Variable                 | Default Value    | Description                                           |
 | ------------------------ | ---------------- | ----------------------------------------------------- |
-| `BASE_IMAGE`             | `alpine:3.11`    | Base Docker Image to build from ([Alpine] Only)       |
+| `AZURE_CLI_VERSION`      | `2.8.0`          | Version of the Azure CLI to install                   |
+| `BASE_IMAGE`             | `alpine:3.12`    | Base Docker Image to build from ([Alpine] Only)       |
+| `CIRCLE_CI_CLI_VERSION`  | `0.1.8599`       | Version of the CircleCI CLI to install                |
 | `DOCKER_GID`             | `1001`           | Group ID to use within the container                  |
 | `DOCKER_GROUP`           | `synapse`        | Group Name to use within the container                |
 | `DOCKER_UID`             | `1001`           | User ID to use within the container                   |
 | `DOCKER_USER`            | `synapse`        | User Name to use within the container                 |
 | `FLY_VERSION`            | `6.0.0`          | [fly] (Concourse CI CLI) version to install           |
 | `GIT_CRYPT_VERSION`      | `master`         | [git-crypt] version (commit ref) to build and install |
+| `K6_VERSION`             | `v0.26.2`        | Version of LoadImpact's k6 to install                 |
 | `KOPS_VERSION`           | `v1.17.0-beta.1` | [kops] version to install                             |
 | `KUBECTL_VERSION`        | `v1.18.0`        | [kubectl] version to install                          |
+| `LEGO_VERSION`           | `3.8.0`          | Version of [lego] to install                          |
 | `PACKER_VERSION`         | `1.5.5`          | [packer] version to install                           |
-| `STARSHIP_VERSION`       | `v0.38.0`        | [starship] version to install                         |
 | `SPIN_VERSION`           | `1.14.0`         | [spin] (Spinnaker CLI) version to install             |
+| `STARSHIP_VERSION`       | `v0.38.0`        | [starship] version to install                         |
 | `TERRAFORM_DOCS_VERSION` | `v0.9.1`         | [terraform-docs] version to install                   |
 | `TERRAFORM_VERSION`      | `0.12.24`        | [terraform] version to install                        |
 | `TFLINT_VERSION`         | `v0.15.3`        | [tflint] version to install                           |
@@ -203,7 +211,9 @@ The following ENV variables should be set in the `.env`.
 [Alpine]: https://alpinelinux.org/
 [ansible]: https://www.ansible.com/
 [awscli]: https://aws.amazon.com/cli/
+[azure-cli]: https://github.com/Azure/azure-cli
 [certbot]: https://certbot.eff.org/
+[CircleCI CLI]: https://github.com/CircleCI-Public/circleci-cli
 [cw]: https://github.com/lucagrulla/cw
 [fira-code]: https://github.com/tonsky/FiraCode
 [fly]: https://concourse-ci.org/fly.html
@@ -216,6 +226,7 @@ The following ENV variables should be set in the `.env`.
 [kind]: https://kind.sigs.k8s.io/
 [kops]: https://github.com/kubernetes/kops
 [kubectl]: https://github.com/kubernetes/kubectl
+[lego]: https://github.com/go-acme/lego
 [packer]: https://packer.io/
 [powerline-fonts]: https://github.com/powerline/fonts
 [pre-commit]: https://pre-commit.com/

@@ -2,6 +2,7 @@
 .gitignore
 .travis.yml
 .env*
+.circleci
 Dockerfile
 hooks
 iterm_profile.json
