@@ -13,6 +13,7 @@ BUILD_DATE              := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 BUILD_OUTPUT            ?= type=registry
 BUILD_PROGRESS          ?= auto
 MICRO_BADGER_URL        ?=
+RELEASES                ?= latest
 
 # Build Args
 AZURE_CLI_VERSION       ?= 2.8.0
@@ -39,11 +40,13 @@ TFLINT_VERSION          ?= v0.15.3
 
 # Default target is to build container
 .PHONY: default
-default: build
+.SILENT: default
+default: latest
 
 # Build the docker image
-.PHONY: build
-build:
+.PHONY: $(RELEASES)
+.SILENT: $(RELEASES)
+$(RELEASES):
 	docker build \
 		--build-arg AZURE_CLI_VERSION=$(AZURE_CLI_VERSION) \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
@@ -68,9 +71,12 @@ build:
 		--build-arg TFLINT_VERSION=$(TFLINT_VERSION) \
 		--build-arg VCS_REF=$(VCS_REF) \
 		--build-arg VERSION=$(VERSION) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(@) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(@)$(TAG_SUFFIX) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF)$(TAG_SUFFIX) \
+		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION)$(TAG_SUFFIX) \
-		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):latest$(TAG_SUFFIX) \
 		--file Dockerfile .
 
 # List built images
