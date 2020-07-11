@@ -77,6 +77,7 @@ $(RELEASES):
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF)$(TAG_SUFFIX) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION) \
 		--tag $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VERSION)$(TAG_SUFFIX) \
+		--progress=$(BUILD_PROGRESS) \
 		--file Dockerfile .
 
 # List built images
@@ -93,7 +94,7 @@ test:
 # Push images to repo
 .PHONY: push
 .SILENT: push
-push: build
+push:
 	echo "$$REPO_PASSWORD" | docker login -u "$(REPO_USERNAME)" --password-stdin; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):latest; \
 		docker push  $(REPO_NAMESPACE)/$(IMAGE_NAME):$(VCS_REF)$(TAG_SUFFIX); \

@@ -33,5 +33,6 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             make
+            make list
             make push
             make push-readme
