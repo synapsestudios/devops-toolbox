@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Build Docker Images
           command: |
-            echo "$DOCKERHUB_PASS" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$REPO_PASSWORD" | docker login --username "$REPO_USERNAME" --password-stdin
             make
             make list
             make push
