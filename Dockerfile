@@ -14,6 +14,7 @@ RUN set -xe; \
         gawk \
         gettext \
         git \
+        grep \
         htop \
         jq \
         krb5-libs \
